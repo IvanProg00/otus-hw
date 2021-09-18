@@ -21,15 +21,11 @@ func Unpack(str string) (string, error) {
 				return "", ErrInvalidString
 			}
 
-			numRep, err := strconv.Atoi(string(c))
-			if err != nil {
-				return "", ErrInvalidString
-			}
-
+			numRep, _ := strconv.Atoi(string(c))
 			b.WriteString(strings.Repeat(string(pastLetter), numRep))
 			isPastLetter = false
 		} else {
-			if isPastSlash && !unicode.IsDigit(c) && string(c) != `\` {
+			if isPastSlash && !unicode.IsDigit(c) && c != '\\' {
 				return "", ErrInvalidString
 			}
 
@@ -39,7 +35,7 @@ func Unpack(str string) (string, error) {
 
 			if isPastSlash {
 				isPastSlash = false
-			} else if string(c) == `\` {
+			} else if c == '\\' {
 				isPastSlash = true
 			}
 
