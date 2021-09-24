@@ -10,7 +10,7 @@ import (
 type unpackStruct struct {
 	b            strings.Builder
 	isPastLetter bool
-	isPastSlash  bool
+	isSlash      bool
 	pastLetter   rune
 }
 
@@ -19,20 +19,24 @@ var ErrInvalidString = errors.New("invalid string")
 func Unpack(str string) (string, error) {
 	unpackS := unpackStruct{
 		isPastLetter: false,
-		isPastSlash:  false,
+		isSlash:      false,
 	}
 
 	for _, c := range str {
-		if unicode.IsDigit(c) && !unpackS.isPastSlash {
+		if unicode.IsDigit(c) && !unpackS.isSlash {
 			if !unpackS.isPastLetter {
 				return "", ErrInvalidString
 			}
 
-			numRep, _ := strconv.Atoi(string(c))
+			numRep, err := strconv.Atoi(string(c))
+			if err != nil {
+				return "", ErrInvalidString
+			}
+
 			unpackS.b.WriteString(strings.Repeat(string(unpackS.pastLetter), numRep))
 			unpackS.isPastLetter = false
-		} else if err := ifLetter(&unpackS, c); err != nil {
-			return "", ErrInvalidString
+		} else if err := validateIsLetterOrSlash(&unpackS, c); err != nil {
+			return "", err
 		}
 	}
 
@@ -43,19 +47,19 @@ func Unpack(str string) (string, error) {
 	return unpackS.b.String(), nil
 }
 
-func ifLetter(unpackS *unpackStruct, currentRune rune) error {
-	if unpackS.isPastSlash && !unicode.IsDigit(currentRune) && currentRune != '\\' {
-		return ErrInvalidString
-	}
-
-	if unpackS.isPastLetter && !unpackS.isPastSlash {
-		unpackS.b.WriteRune(unpackS.pastLetter)
-	}
-
-	if unpackS.isPastSlash {
-		unpackS.isPastSlash = false
-	} else if currentRune == '\\' {
-		unpackS.isPastSlash = true
+func validateIsLetterOrSlash(unpackS *unpackStruct, currentRune rune) error {
+	if unpackS.isSlash {
+		if !unicode.IsDigit(currentRune) && currentRune != '\\' {
+			return ErrInvalidString
+		}
+		unpackS.isSlash = false
+	} else {
+		if unpackS.isPastLetter {
+			unpackS.b.WriteRune(unpackS.pastLetter)
+		}
+		if currentRune == '\\' {
+			unpackS.isSlash = true
+		}
 	}
 
 	unpackS.pastLetter = currentRune
