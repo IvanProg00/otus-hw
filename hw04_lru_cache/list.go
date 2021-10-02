@@ -1,7 +1,5 @@
 package hw04lrucache
 
-import "fmt"
-
 type List interface {
 	Len() int
 	Front() *ListItem
@@ -98,7 +96,6 @@ func (l *list) Remove(i *ListItem) {
 	}
 
 	l.size--
-	i = nil
 }
 
 func (l *list) MoveToFront(i *ListItem) {
@@ -114,19 +111,15 @@ func (l *list) MoveToFront(i *ListItem) {
 	if i.Next != nil {
 		i.Next.Prev = i.Prev
 	}
-	fmt.Println("---1", l.back)
 	if i.Prev != nil {
-		fmt.Println(i.Next)
 		i.Prev.Next = i.Next
 	}
 
 	if l.front != nil {
 		i.Next = l.front
 	}
-	fmt.Println("---2", l.back)
 
 	i.Prev = nil
 	l.front.Prev = i
 	l.front = i
-
 }
