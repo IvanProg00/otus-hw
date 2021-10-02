@@ -57,6 +57,22 @@ func TestList(t *testing.T) {
 		prevLast := l.Back().Prev
 		l.MoveToFront(prevLast)
 		require.Equal(t, []int{10, 80, 60, 40, 30}, getListInt(l))
+
+		l.Remove(l.Back())
+		require.Equal(t, []int{10, 80, 60, 40}, getListInt(l))
+		require.Equal(t, 4, l.Len())
+		l.Remove(l.Front())
+		require.Equal(t, []int{80, 60, 40}, getListInt(l))
+		require.Equal(t, 3, l.Len())
+		l.Remove(l.Back())
+		require.Equal(t, []int{80, 60}, getListInt(l))
+		require.Equal(t, 2, l.Len())
+		l.Remove(l.Front())
+		require.Equal(t, []int{60}, getListInt(l))
+		require.Equal(t, 1, l.Len())
+		l.Remove(l.Back())
+		require.Equal(t, []int{}, getListInt(l))
+		require.Equal(t, 0, l.Len())
 	})
 }
 
