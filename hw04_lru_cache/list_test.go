@@ -73,6 +73,44 @@ func TestList(t *testing.T) {
 		l.Remove(l.Back())
 		require.Equal(t, []int{}, getListInt(l))
 		require.Equal(t, 0, l.Len())
+
+	})
+
+	t.Run("prev next value", func(t *testing.T) {
+		l := NewList()
+		i1 := l.PushFront(10) // [10]
+		require.Equal(t, 1, l.Len())
+		require.Equal(t, 10, i1.Value)
+		require.Nil(t, i1.Next)
+		require.Nil(t, i1.Prev)
+
+		l.Remove(l.Back())
+		i1 = l.PushBack(20) // [20]
+		require.Equal(t, 1, l.Len())
+		require.Equal(t, 20, i1.Value)
+		require.Nil(t, i1.Next)
+		require.Nil(t, i1.Prev)
+
+		i2 := l.PushBack(30) // [20, 30]
+		require.Equal(t, 2, l.Len())
+		require.Equal(t, 20, i1.Value)
+		require.NotNil(t, i1.Next)
+		require.Nil(t, i1.Prev)
+		require.Equal(t, 30, i2.Value)
+		require.Nil(t, i2.Next)
+		require.NotNil(t, i2.Prev)
+
+		i3 := l.PushFront(40) // [40, 20, 30]
+		require.Equal(t, 3, l.Len())
+		require.Equal(t, 20, i1.Value)
+		require.NotNil(t, i1.Next)
+		require.NotNil(t, i1.Prev)
+		require.Equal(t, 30, i2.Value)
+		require.Nil(t, i2.Next)
+		require.NotNil(t, i2.Prev)
+		require.Equal(t, 40, i3.Value)
+		require.NotNil(t, i3.Next)
+		require.Nil(t, i3.Prev)
 	})
 }
 
