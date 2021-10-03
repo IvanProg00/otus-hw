@@ -65,9 +65,5 @@ func (c *lruCache) Clear() {
 	for k := range c.items {
 		delete(c.items, k)
 	}
-	for i := c.queue.Front(); i != nil; i = i.Next {
-		i.Prev = nil
-		i.Value = nil
-		i.Next = nil
-	}
+	c.queue = NewList()
 }
