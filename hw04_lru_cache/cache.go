@@ -68,5 +68,6 @@ func (c *lruCache) Clear() {
 	for i := c.queue.Front(); i != nil; i = i.Next {
 		i.Prev = nil
 		i.Value = nil
+		i.Next = nil
 	}
 }

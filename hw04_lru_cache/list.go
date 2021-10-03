@@ -1,5 +1,7 @@
 package hw04lrucache
 
+import "fmt"
+
 type List interface {
 	Len() int
 	Front() *ListItem
@@ -46,6 +48,7 @@ func (l *list) PushFront(v interface{}) *ListItem {
 	if l.size == 0 {
 		l.back = &listItem
 	} else {
+		fmt.Println(l.front)
 		l.front.Prev = &listItem
 		listItem.Next = l.front
 	}
