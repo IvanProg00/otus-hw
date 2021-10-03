@@ -73,7 +73,6 @@ func TestList(t *testing.T) {
 		l.Remove(l.Back())
 		require.Equal(t, []int{}, getListInt(l))
 		require.Equal(t, 0, l.Len())
-
 	})
 
 	t.Run("prev next value", func(t *testing.T) {

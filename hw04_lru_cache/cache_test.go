@@ -36,7 +36,6 @@ func TestCache(t *testing.T) {
 	val, ok = c.Get("ccc")
 	require.False(t, ok)
 	require.Nil(t, val)
-
 }
 
 func TestCacheEmpty(t *testing.T) {
@@ -74,7 +73,6 @@ func TestCachePurgeLogic(t *testing.T) {
 	val, wasInCache = c.Get("b")
 	require.False(t, wasInCache)
 	require.Nil(t, val)
-
 }
 
 func cacheSetGet(t *testing.T, c Cache) {
@@ -292,7 +290,6 @@ func cacheClearSetGet(t *testing.T, c Cache) {
 	val, wasInCache = c.Get("5")
 	require.True(t, wasInCache)
 	require.Equal(t, 5, val)
-
 }
 
 func TestCacheComplexLogic(t *testing.T) {
