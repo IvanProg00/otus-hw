@@ -50,7 +50,135 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		c := NewCache(1)
+
+		wasInCache := c.Set("a", 1)
+		require.False(t, wasInCache)
+		val, wasInCache := c.Get("a")
+		require.True(t, wasInCache)
+		require.Equal(t, 1, val)
+
+		wasInCache = c.Set("b", 2)
+		require.False(t, wasInCache)
+		val, wasInCache = c.Get("b")
+		require.True(t, wasInCache)
+		require.Equal(t, 2, val)
+		val, wasInCache = c.Get("a")
+		require.False(t, wasInCache)
+		require.Nil(t, val)
+
+		c.Clear()
+		val, wasInCache = c.Get("a")
+		require.False(t, wasInCache)
+		require.Nil(t, val)
+		val, wasInCache = c.Get("b")
+		require.False(t, wasInCache)
+		require.Nil(t, val)
+	})
+
+	t.Run("complex purge logic", func(t *testing.T) {
+		c := NewCache(4)
+		wasInCache := c.Set("1", 1)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("2", 2)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("3", 3)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("4", 4)
+		require.False(t, wasInCache)
+		// {"4": 4, "3": 3, "2": 2, "1": 1}
+
+		wasInCache = c.Set("5", 5) // {"5": 5, "4": 4, "3": 3, "2": 2}
+		require.False(t, wasInCache)
+		val, wasInCache := c.Get("2")
+		require.True(t, wasInCache)
+		require.Equal(t, 2, val)
+		val, wasInCache = c.Get("3")
+		require.True(t, wasInCache)
+		require.Equal(t, 3, val)
+		val, wasInCache = c.Get("4")
+		require.True(t, wasInCache)
+		require.Equal(t, 4, val)
+		val, wasInCache = c.Get("5")
+		require.True(t, wasInCache)
+		require.Equal(t, 5, val)
+		val, wasInCache = c.Get("1")
+		require.False(t, wasInCache)
+		require.Nil(t, val)
+
+		wasInCache = c.Set("2", 22) // {"2": 22, "5": 5, "4": 4, "3": 3}
+		require.True(t, wasInCache)
+		wasInCache = c.Set("6", 6) // {"6": 6, "2": 22, "5": 5, "4": 4}
+		require.False(t, wasInCache)
+		val, wasInCache = c.Get("2")
+		require.True(t, wasInCache)
+		require.Equal(t, 22, val)
+		val, wasInCache = c.Get("3")
+		require.False(t, wasInCache)
+		require.Nil(t, val)
+		val, wasInCache = c.Get("4")
+		require.True(t, wasInCache)
+		require.Equal(t, 4, val)
+		val, wasInCache = c.Get("5")
+		require.True(t, wasInCache)
+		require.Equal(t, 5, val)
+		val, wasInCache = c.Get("6")
+		require.True(t, wasInCache)
+		require.Equal(t, 6, val)
+
+		wasInCache = c.Set("2", 200) // {"2": 200, "6": 6, "5": 5, "4": 4}
+		require.True(t, wasInCache)
+		wasInCache = c.Set("5", 50) // {"5": 50, "2": 200, "6": 6, "4": 4}
+		require.True(t, wasInCache)
+		wasInCache = c.Set("6", 60) // {"6": 60, "5": 50, "2": 200, "4": 4}
+		require.True(t, wasInCache)
+		wasInCache = c.Set("4", 40) // {"4": 40, "6": 60, "5": 50, "2": 200}
+		require.True(t, wasInCache)
+		wasInCache = c.Set("4", 44) // {"4": 44, "6": 60, "5": 50, "2": 200}
+		require.True(t, wasInCache)
+		wasInCache = c.Set("5", 55) // {"5": 55, "4": 44, "6": 60, "2": 200}
+		require.True(t, wasInCache)
+		wasInCache = c.Set("6", 66) // {"6": 66, "5": 55, "4": 44, "2": 200}
+		require.True(t, wasInCache)
+
+		c.Set("100", 100) // {"100": 100, "6": 66, "5": 55, "4": 44}
+		val, wasInCache = c.Get("2")
+		require.False(t, wasInCache)
+		require.Nil(t, val)
+		c.Set("200", 200) // {"100": 100, "200": 200, "6": 66, "5": 55}
+		val, wasInCache = c.Get("4")
+		require.False(t, wasInCache)
+		require.Nil(t, val)
+		c.Set("300", 300) // {"100": 100, "200": 200, "300": 300, "6": 66}
+		val, wasInCache = c.Get("5")
+		require.False(t, wasInCache)
+		require.Nil(t, val)
+		c.Set("400", 400) // {"100": 100, "200": 200, "300": 300, "400": 400}
+		val, wasInCache = c.Get("6")
+		require.False(t, wasInCache)
+		require.Nil(t, val)
+	})
+
+	t.Run("purge", func(t *testing.T) {
+		c := NewCache(3)
+		c.Set("1", 1)
+		c.Set("2", 2)
+		c.Set("3", 3)
+		c.Set("4", 4)
+
+		c.Clear()
+		val, wasInCache := c.Get("1")
+		require.False(t, wasInCache)
+		require.Nil(nil, val)
+		val, wasInCache = c.Get("2")
+		require.False(t, wasInCache)
+		require.Nil(nil, val)
+		val, wasInCache = c.Get("3")
+		require.False(t, wasInCache)
+		require.Nil(nil, val)
+		val, wasInCache = c.Get("4")
+		require.False(t, wasInCache)
+		require.Nil(nil, val)
 	})
 }
 
