@@ -21,7 +21,7 @@ func Run(tasks []Task, n, m int) error {
 
 	wg := sync.WaitGroup{}
 	ch := make(chan Task, n)
-	var errorCounter int64 = int64(m)
+	errorCounter := int64(m)
 
 	for i := 0; i < n; i++ {
 		wg.Add(1)
