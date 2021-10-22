@@ -68,3 +68,53 @@ func TestRun(t *testing.T) {
 		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
 	})
 }
+
+func TestRun_minimumWorkerNumber(t *testing.T) {
+	err := Run([]Task{}, 0, 1)
+	require.ErrorIs(t, err, ErrMinWorkerNumber)
+}
+
+func TestRun_errorsLimitExceded(t *testing.T) {
+	tests := []struct {
+		m int
+	}{
+		{
+			m: -1,
+		}, {
+			m: 0,
+		}, {
+			m: -483,
+		},
+	}
+
+	for _, test := range tests {
+		err := Run([]Task{}, 1, test.m)
+		require.ErrorIs(t, err, ErrErrorsLimitExceeded)
+	}
+}
+
+func TestRun_workersMoreThanTasks(t *testing.T) {
+	taskCount := 10
+	tasks := make([]Task, 0, taskCount)
+	var sumTime time.Duration
+	var taskCounter int32
+
+	for i := 0; i < taskCount; i++ {
+		taskSleep := time.Millisecond * time.Duration(rand.Intn(100))
+		sumTime += taskSleep
+
+		tasks = append(tasks, func() error {
+			time.Sleep(taskSleep)
+			atomic.AddInt32(&taskCounter, 1)
+			return nil
+		})
+	}
+
+	start := time.Now()
+	err := Run(tasks, 40, 1)
+	elapsedTime := time.Since(start)
+
+	require.NoError(t, err)
+	require.Equal(t, taskCounter, int32(taskCount), "not all tasks were completed")
+	require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
+}
