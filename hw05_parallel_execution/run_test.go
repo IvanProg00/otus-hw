@@ -110,11 +110,61 @@ func TestRun_workersMoreThanTasks(t *testing.T) {
 		})
 	}
 
-	start := time.Now()
-	err := Run(tasks, 40, 1)
-	elapsedTime := time.Since(start)
+	workerCount := 40
+	maxErrorsCount := 1
 
+	start := time.Now()
+	err := Run(tasks, workerCount, maxErrorsCount)
+	elapsedTime := time.Since(start)
 	require.NoError(t, err)
 	require.Equal(t, taskCounter, int32(taskCount), "not all tasks were completed")
-	require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
+	require.LessOrEqual(t, elapsedTime, sumTime/2)
+}
+
+func TestRun_errorNumEqualsM(t *testing.T) {
+	correctTasks := 30
+	incorrectTasks := 30
+	tasks := make([]Task, 0, correctTasks+incorrectTasks)
+	var sumTime time.Duration
+	var taskCounter int32
+
+	for i := 0; i < correctTasks; i++ {
+		taskSleep := time.Millisecond * time.Duration(rand.Intn(100))
+		sumTime += taskSleep
+
+		tasks = append(tasks, func() error {
+			time.Sleep(taskSleep)
+			atomic.AddInt32(&taskCounter, 1)
+			return nil
+		})
+	}
+
+	for i := 0; i < incorrectTasks; i++ {
+		taskSleep := time.Millisecond * time.Duration(rand.Intn(100))
+		sumTime += taskSleep
+
+		tasks = append(tasks, func() error {
+			time.Sleep(taskSleep)
+			atomic.AddInt32(&taskCounter, 1)
+			return errors.New("Some Error")
+		})
+	}
+
+	require.Eventually(t, func() bool {
+		err := Run(tasks, 5, incorrectTasks+1)
+		require.NoError(t, err)
+		require.Equal(t, taskCounter, int32(correctTasks+incorrectTasks), "not all tasks were completed")
+		return true
+	}, sumTime/2, sumTime/8)
+}
+
+func TestRun_withoutTasks(t *testing.T) {
+	tasks := []Task{}
+	waitForTest := time.Millisecond * 5
+
+	require.Eventually(t, func() bool {
+		err := Run(tasks, 5, 1)
+		require.NoError(t, err)
+		return true
+	}, waitForTest, waitForTest/5)
 }
