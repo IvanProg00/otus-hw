@@ -31,7 +31,11 @@ func executeStage(in In, done In, stage Stage) Out {
 				if !ok {
 					return
 				}
-				out <- v
+				select {
+				case out <- v:
+				case <-done:
+					return
+				}
 			case <-done:
 				return
 			}
