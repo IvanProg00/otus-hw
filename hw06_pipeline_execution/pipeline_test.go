@@ -130,13 +130,14 @@ func TestPipeline_doneOnStart(t *testing.T) {
 }
 
 func TestPipeline_50Stages(t *testing.T) {
+	stageDuration := time.Millisecond * 5
 	g := func(f func(v interface{}) interface{}) Stage {
 		return func(in In) Out {
 			out := make(Bi)
 			go func() {
 				defer close(out)
 				for v := range in {
-					// time.Sleep(sleepPerStage)
+					time.Sleep(stageDuration)
 					out <- f(v)
 				}
 			}()
@@ -167,5 +168,5 @@ func TestPipeline_50Stages(t *testing.T) {
 
 	require.Len(t, result, 1)
 	require.Equal(t, result[0], numStages)
-	require.Less(t, int64(elapsed), sleepPerStage)
+	require.Less(t, int64(elapsed), int64(stageDuration)*int64(numStages*2))
 }
