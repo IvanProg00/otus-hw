@@ -91,3 +91,81 @@ func TestPipeline(t *testing.T) {
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
 }
+
+func TestPipeline_doneOnStart(t *testing.T) {
+	g := func(_ string, f func(v interface{}) interface{}) Stage {
+		return func(in In) Out {
+			out := make(Bi)
+			go func() {
+				defer close(out)
+				for v := range in {
+					time.Sleep(sleepPerStage)
+					out <- f(v)
+				}
+			}()
+			return out
+		}
+	}
+
+	stages := []Stage{
+		g("Multiplier (* 2)", func(v interface{}) interface{} { return v.(int) * 2 }),
+		g("Adder (+ 100)", func(v interface{}) interface{} { return v.(int) + 100 }),
+		g("Stringifier", func(v interface{}) interface{} { return strconv.Itoa(v.(int)) }),
+	}
+
+	in := make(Bi)
+	done := make(Bi)
+
+	result := make([]string, 0, 10)
+	start := time.Now()
+
+	close(done)
+	for s := range ExecutePipeline(in, done, stages...) {
+		result = append(result, s.(string))
+	}
+	elapsed := time.Since(start)
+
+	require.Len(t, result, 0)
+	require.Less(t, int64(elapsed), sleepPerStage)
+}
+
+func TestPipeline_50Stages(t *testing.T) {
+	g := func(f func(v interface{}) interface{}) Stage {
+		return func(in In) Out {
+			out := make(Bi)
+			go func() {
+				defer close(out)
+				for v := range in {
+					// time.Sleep(sleepPerStage)
+					out <- f(v)
+				}
+			}()
+			return out
+		}
+	}
+
+	numStages := 50
+	var stages []Stage
+	for i := 0; i < numStages; i++ {
+		stages = append(stages, g(func(v interface{}) interface{} { return v.(int) + 1 }))
+	}
+
+	in := make(Bi)
+
+	result := make([]int, 0, numStages)
+	start := time.Now()
+
+	go func() {
+		in <- 0
+		close(in)
+	}()
+
+	for v := range ExecutePipeline(in, nil, stages...) {
+		result = append(result, v.(int))
+	}
+	elapsed := time.Since(start)
+
+	require.Len(t, result, 1)
+	require.Equal(t, result[0], numStages)
+	require.Less(t, int64(elapsed), sleepPerStage)
+}
