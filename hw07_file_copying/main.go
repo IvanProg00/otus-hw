@@ -30,7 +30,8 @@ func main() {
 	}
 
 	if err := Copy(from, to, offset, limit); err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
 

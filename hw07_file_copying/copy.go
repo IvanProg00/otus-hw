@@ -15,6 +15,10 @@ var (
 )
 
 func Copy(fromPath, toPath string, offset, limit int64) error {
+	if fromPath == toPath {
+		return ErrUnsupportedFile
+	}
+
 	fInfo, err := os.Stat(fromPath)
 	if err != nil {
 		return ErrUnsupportedFile
