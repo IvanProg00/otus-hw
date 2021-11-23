@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 )
 
@@ -12,20 +14,22 @@ func main() {
 	}
 
 	path := os.Args[1]
+	if path == "" {
+		fmt.Println("path can not be empty")
+	}
 
-	info, err := os.Stat(path)
+	envs, err := ReadDir(path)
 	if err != nil {
-		pathError, ok := err.(*os.PathError)
+		var errorPath *fs.PathError
+
+		ok := errors.As(err, &errorPath)
 		if !ok {
-			panic(err)
+			fmt.Println(errorPath.Err)
+		} else {
+			fmt.Println(err)
 		}
-
-		fmt.Println(pathError.Err)
 		os.Exit(1)
 	}
 
-	if !info.IsDir() {
-		fmt.Println("passed path is not a directory")
-		os.Exit(1)
-	}
+	fmt.Printf("%+v\n", envs)
 }
