@@ -9,7 +9,10 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("you must pass a path to directory")
+		fmt.Println("you must pass path and command")
+		os.Exit(1)
+	} else if len(os.Args) < 3 {
+		fmt.Println("you must pass a command")
 		os.Exit(1)
 	}
 
@@ -18,7 +21,7 @@ func main() {
 		fmt.Println("path can not be empty")
 	}
 
-	envs, err := ReadDir(path)
+	env, err := ReadDir(path)
 	if err != nil {
 		var errorPath *fs.PathError
 
@@ -31,5 +34,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("%+v\n", envs)
+	code := RunCmd(os.Args[2:], env)
+	os.Exit(code)
 }

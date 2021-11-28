@@ -1,9 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"errors"
-	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path"
@@ -32,38 +33,56 @@ func ReadDir(dir string) (Environment, error) {
 			continue
 		}
 
-		fmt.Println(fInfo.Name())
-
-		f, err := os.Open(path.Join(dir, fInfo.Name()))
+		val, err := getEnvValue(dir, fInfo)
 		if err != nil {
 			return nil, err
 		}
 
-		buf := make([]byte, 4)
-		n, err := f.Read(buf)
-		val := ""
+		res[fInfo.Name()] = val
+	}
 
+	return res, nil
+}
+
+func getEnvValue(dir string, fInfo fs.FileInfo) (EnvValue, error) {
+	if fInfo.Size() == 0 {
+		return EnvValue{
+			NeedRemove: true,
+		}, nil
+	}
+
+	f, err := os.Open(path.Join(dir, fInfo.Name()))
+	if err != nil {
+		return EnvValue{}, err
+	}
+
+	buf := make([]byte, 40)
+	val := ""
+
+	for {
+		n, err := f.Read(buf)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				break
 			}
-			return nil, err
+			return EnvValue{}, err
 		}
 
-		readed := string(buf[:n])
-		until := strings.IndexByte(readed, '\n')
+		readed := buf[:n]
+		until := bytes.IndexByte(readed, '\n')
+		readed = bytes.ReplaceAll(readed, []byte{0}, []byte{'\n'})
 
-		if until < 0 {
-			val += readed
-		} else {
-			val += readed[:until]
+		if until >= 0 {
+			val += string(readed[:until])
+			break
 		}
-
-		res[fInfo.Name()] = EnvValue{
-			Value: val,
-			// NeedRemove: false,
-		}
+		val += string(readed)
 	}
 
-	return res, nil
+	val = strings.TrimRight(val, " \t")
+
+	return EnvValue{
+		Value:      val,
+		NeedRemove: false,
+	}, nil
 }
