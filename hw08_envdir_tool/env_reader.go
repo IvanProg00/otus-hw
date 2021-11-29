@@ -56,7 +56,7 @@ func getEnvValue(dir string, fInfo fs.FileInfo) (EnvValue, error) {
 		return EnvValue{}, err
 	}
 
-	buf := make([]byte, 40)
+	buf := make([]byte, 128)
 	val := ""
 
 	for {

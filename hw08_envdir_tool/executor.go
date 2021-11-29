@@ -25,9 +25,11 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 
 	command := cmd[0]
 	cmdRun := exec.Command(command, cmd[1:]...)
+	cmdRun.Stdout = os.Stdout
+	cmdRun.Stderr = os.Stderr
 
-	out, err := cmdRun.Output()
-	if err != nil {
+	if err := cmdRun.Run(); err != nil {
+		fmt.Printf("%+v\n", err)
 		exitError := &exec.ExitError{}
 		ok := errors.As(err, &exitError)
 		if !ok {
@@ -35,8 +37,6 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		}
 		return exitError.ExitCode()
 	}
-
-	fmt.Fprint(os.Stdout, string(out))
 
 	return
 }
