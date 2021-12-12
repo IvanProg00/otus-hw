@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"regexp"
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
@@ -30,39 +29,41 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	return countDomains(u, domain)
 }
 
-type users [100_000]User
+type users []User
 
-func getUsers(r io.Reader) (result users, err error) {
+func getUsers(r io.Reader) (users, error) {
+	result := make(users, 10_000)
 	content, err := ioutil.ReadAll(r)
 	if err != nil {
-		return
+		return result, err
 	}
 
 	lines := strings.Split(string(content), "\n")
-	for i, line := range lines {
+	for _, line := range lines {
 		var user User
 		if err = jsoniter.Unmarshal([]byte(line), &user); err != nil {
-			return
+			return result, err
 		}
-		result[i] = user
+		result = append(result, user)
 	}
-	return
+
+	return result, nil
 }
 
 func countDomains(u users, domain string) (DomainStat, error) {
 	result := make(DomainStat)
 
 	for _, user := range u {
-		matched, err := regexp.Match("\\."+domain, []byte(user.Email))
-		if err != nil {
-			return nil, err
-		}
+		matched := strings.Contains(user.Email, "."+domain)
 
 		if matched {
-			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
+			pos := strings.LastIndexByte(user.Email, '@')
+			domainEmail := strings.ToLower(user.Email[pos+1:])
+			num := result[domainEmail]
 			num++
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num
+			result[domainEmail] = num
 		}
 	}
+
 	return result, nil
 }
