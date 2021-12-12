@@ -1,9 +1,9 @@
 package hw10programoptimization
 
 import (
+	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
@@ -33,18 +33,25 @@ type users []User
 
 func getUsers(r io.Reader) (users, error) {
 	result := make(users, 10_000)
-	content, err := ioutil.ReadAll(r)
-	if err != nil {
-		return result, err
-	}
 
-	lines := strings.Split(string(content), "\n")
-	for _, line := range lines {
+	bufR := bufio.NewReader(r)
+	for {
+		l, err := bufR.ReadBytes('\n')
+		if err != nil {
+			if err != io.EOF {
+				return result, err
+			} else if err == io.EOF && len(l) == 0 {
+				break
+			}
+		}
 		var user User
-		if err = jsoniter.Unmarshal([]byte(line), &user); err != nil {
+		if err = jsoniter.Unmarshal(l, &user); err != nil {
 			return result, err
 		}
 		result = append(result, user)
+		if err == io.EOF {
+			break
+		}
 	}
 
 	return result, nil
