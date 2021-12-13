@@ -26,8 +26,10 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 type users []User
 
 func getUsers(r io.Reader) (users, error) {
-	result := make(users, 0, 10_000)
+	result := make(users, 0, 14_000)
 	bufR := bufio.NewReader(r)
+	var user User
+	jsoniter := jsoniter.ConfigFastest
 
 	for {
 		l, err := bufR.ReadBytes('\n')
@@ -39,7 +41,6 @@ func getUsers(r io.Reader) (users, error) {
 			}
 		}
 
-		var user User
 		if err = jsoniter.Unmarshal(l, &user); err != nil {
 			return result, err
 		}
@@ -57,11 +58,9 @@ func countDomains(u users, domain string) (DomainStat, error) {
 	domain = "." + domain
 
 	for _, user := range u {
-		if len(user.Email) >= len(domain) {
-			if user.Email[len(user.Email)-len(domain):] == domain {
-				pos := strings.LastIndexByte(user.Email, '@')
-				result[strings.ToLower(user.Email[pos+1:])]++
-			}
+		if strings.HasSuffix(user.Email, domain) {
+			pos := strings.IndexByte(user.Email, '@')
+			result[strings.ToLower(user.Email[pos+1:])]++
 		}
 	}
 
