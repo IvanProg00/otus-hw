@@ -236,8 +236,8 @@ func TestValidate_incorrectValues(t *testing.T) {
 	}
 
 	for i, tt := range tests {
+		tt := tt
 		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
-			tt := tt
 			t.Parallel()
 
 			err := Validate(tt.in)
