@@ -36,56 +36,23 @@ func (v ValidationErrors) Error() string {
 
 func Validate(v interface{}) error {
 	errs := make(ValidationErrors, 0)
+	val := reflect.ValueOf(v)
+	valType := val.Type()
 
-	t := reflect.TypeOf(v)
-	if t.Kind() != reflect.Struct {
+	if valType.Kind() != reflect.Struct {
 		return ErrExpectedStructure
 	}
 
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
+	for i := 0; i < val.NumField(); i++ {
+		field := valType.Field(i)
 
 		if tag, ok := field.Tag.Lookup("validate"); ok {
-			valParams := make(map[string]string)
-			for _, v := range strings.Split(tag, "|") {
-				params := strings.Split(v, ":")
-				valParams[params[0]] = params[1]
-			}
-
-			val := reflect.ValueOf(v).Field(i)
-			switch v := val.Interface().(type) {
-			case string:
-				if err := validators.ValidateIfString(v, valParams); err != nil {
-					errs = append(errs, ValidationError{
-						Field: field.Name,
-						Err:   err,
-					})
-				}
-			case []string:
-				if err := validators.ValidateIfSliceString(v, valParams); err != nil {
-					errs = append(errs, ValidationError{
-						Field: field.Name,
-						Err:   err,
-					})
-				}
-			case int:
-				if err := validators.ValidateIfInt(v, valParams); err != nil {
-					errs = append(errs, ValidationError{
-						Field: field.Name,
-						Err:   err,
-					})
-				}
-			case []int:
-				if err := validators.ValidateIfSliceInt(v, valParams); err != nil {
-					errs = append(errs, ValidationError{
-						Field: field.Name,
-						Err:   err,
-					})
-				}
-			default:
+			params := GetValidateParams(tag)
+			err := ValidateField(val.Field(i), params)
+			if err != nil {
 				errs = append(errs, ValidationError{
 					Field: field.Name,
-					Err:   ErrTypeNotSupports,
+					Err:   err,
 				})
 			}
 		}
@@ -95,4 +62,30 @@ func Validate(v interface{}) error {
 		return nil
 	}
 	return errs
+}
+
+func GetValidateParams(tag string) map[string]string {
+	res := make(map[string]string)
+
+	for _, v := range strings.Split(tag, "|") {
+		params := strings.Split(v, ":")
+		res[params[0]] = params[1]
+	}
+
+	return res
+}
+
+func ValidateField(fieldVal reflect.Value, params map[string]string) error {
+	switch v := fieldVal.Interface().(type) {
+	case string:
+		return validators.ValidateIfString(v, params)
+	case []string:
+		return validators.ValidateIfSliceString(v, params)
+	case int:
+		return validators.ValidateIfInt(v, params)
+	case []int:
+		return validators.ValidateIfSliceInt(v, params)
+	default:
+		return ErrTypeNotSupports
+	}
 }
