@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"io"
 	"net"
 	"time"
@@ -14,41 +13,39 @@ type TelnetClient interface {
 	Receive() error
 }
 
-type TelnetClientConfig struct {
+type telnetClient struct {
 	address string
 	timeout time.Duration
-	net.Conn
+	conn    net.Conn
+	in      io.ReadCloser
+	out     io.Writer
 }
 
 func NewTelnetClient(address string, timeout time.Duration, in io.ReadCloser, out io.Writer) TelnetClient {
-
-	return &TelnetClientConfig{
+	return &telnetClient{
 		address: address,
 		timeout: timeout,
+		in:      in,
+		out:     out,
 	}
 }
 
-func (t *TelnetClientConfig) Connect() error {
-
-	conn, err := net.DialTimeout("tcp", t.address, t.timeout)
+func (c *telnetClient) Connect() error {
+	conn, err := net.DialTimeout("tcp", c.address, c.timeout)
 	if err != nil {
 		return err
 	}
-	bufio.NewScanner(conn)
-	t.Conn = conn
+	c.conn = conn
 	return nil
 }
-
-func (t *TelnetClientConfig) Send() error {
-	t.Conn.Write()
-
+func (c *telnetClient) Send() error {
+	io.Copy(c.conn, c.in)
 	return nil
 }
-
-func (t *TelnetClientConfig) Receive() error {
+func (c *telnetClient) Receive() error {
+	io.Copy(c.out, c.conn)
 	return nil
 }
-
-func (t *TelnetClientConfig) Close() error {
-	return t.Conn.Close()
+func (c *telnetClient) Close() error {
+	return nil
 }
