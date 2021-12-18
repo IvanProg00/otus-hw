@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	ErrExpectedStructure = errors.New("expected a structure")
-	ErrTypeNotSupports   = errors.New("type not supports")
+	ErrExpectedStructure      = errors.New("expected a structure")
+	ErrTypeNotSupports        = errors.New("type not supports")
+	ErrIncorrectTagAssertions = errors.New("incorrect tag assertions")
 )
 
 type ValidationError struct {
@@ -44,14 +45,27 @@ func Validate(v interface{}) error {
 	}
 
 	for i := 0; i < val.NumField(); i++ {
-		field := valType.Field(i)
+		fieldType := valType.Field(i)
+		fieldVal := val.Field(i)
 
-		if tag, ok := field.Tag.Lookup("validate"); ok {
-			params := GetValidateParams(tag)
-			err := ValidateField(val.Field(i), params)
+		if fieldVal.CanSet() {
+			continue
+		}
+
+		if tag, ok := fieldType.Tag.Lookup("validate"); ok {
+			params, err := GetValidateParams(tag)
 			if err != nil {
 				errs = append(errs, ValidationError{
-					Field: field.Name,
+					Field: fieldType.Name,
+					Err:   err,
+				})
+				continue
+			}
+
+			err = ValidateField(fieldVal, params)
+			if err != nil {
+				errs = append(errs, ValidationError{
+					Field: fieldType.Name,
 					Err:   err,
 				})
 			}
@@ -64,15 +78,18 @@ func Validate(v interface{}) error {
 	return errs
 }
 
-func GetValidateParams(tag string) map[string]string {
+func GetValidateParams(tag string) (map[string]string, error) {
 	res := make(map[string]string)
 
 	for _, v := range strings.Split(tag, "|") {
 		params := strings.Split(v, ":")
+		if len(params) != 2 {
+			return nil, ErrIncorrectTagAssertions
+		}
 		res[params[0]] = params[1]
 	}
 
-	return res
+	return res, nil
 }
 
 func ValidateField(fieldVal reflect.Value, params map[string]string) error {

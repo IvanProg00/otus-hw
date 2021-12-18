@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"io"
+	"net"
 	"time"
 )
 
@@ -12,10 +14,41 @@ type TelnetClient interface {
 	Receive() error
 }
 
+type TelnetClientConfig struct {
+	address string
+	timeout time.Duration
+	net.Conn
+}
+
 func NewTelnetClient(address string, timeout time.Duration, in io.ReadCloser, out io.Writer) TelnetClient {
-	// Place your code here.
+
+	return &TelnetClientConfig{
+		address: address,
+		timeout: timeout,
+	}
+}
+
+func (t *TelnetClientConfig) Connect() error {
+
+	conn, err := net.DialTimeout("tcp", t.address, t.timeout)
+	if err != nil {
+		return err
+	}
+	bufio.NewScanner(conn)
+	t.Conn = conn
 	return nil
 }
 
-// Place your code here.
-// P.S. Author's solution takes no more than 50 lines.
+func (t *TelnetClientConfig) Send() error {
+	t.Conn.Write()
+
+	return nil
+}
+
+func (t *TelnetClientConfig) Receive() error {
+	return nil
+}
+
+func (t *TelnetClientConfig) Close() error {
+	return t.Conn.Close()
+}
