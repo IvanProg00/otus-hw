@@ -13,8 +13,8 @@ import (
 )
 
 func main() {
-	var timeoutStr string
-	pflag.StringVarP(&timeoutStr, "timeout", "t", "10s", "timeout")
+	var timeout time.Duration
+	pflag.DurationVarP(&timeout, "timeout", "t", 10*time.Second, "timeout")
 	pflag.Parse()
 
 	if len(pflag.Args()) != 2 {
@@ -23,18 +23,14 @@ func main() {
 
 	hostname := pflag.Arg(0)
 	port := pflag.Arg(1)
-	timeout, err := time.ParseDuration(timeoutStr)
-	if err != nil {
-		log.Fatalf("incorrect argument timeout: %v", err)
-	}
 	address := net.JoinHostPort(hostname, port)
 
 	client := NewTelnetClient(address, timeout, os.Stdin, os.Stdout)
 
-	ConnectTelnet(client, address, context.Background())
+	ConnectTelnet(context.Background(), client, address)
 }
 
-func ConnectTelnet(client TelnetClient, address string, context context.Context) {
+func ConnectTelnet(context context.Context, client TelnetClient, address string) {
 	if err := client.Connect(); err != nil {
 		log.Fatalf("connection failed: %s", err)
 	}

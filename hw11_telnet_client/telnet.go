@@ -38,14 +38,17 @@ func (c *telnetClient) Connect() error {
 	c.conn = conn
 	return nil
 }
+
 func (c *telnetClient) Send() error {
 	io.Copy(c.conn, c.in)
 	return nil
 }
+
 func (c *telnetClient) Receive() error {
 	io.Copy(c.out, c.conn)
 	return nil
 }
+
 func (c *telnetClient) Close() error {
 	return nil
 }
