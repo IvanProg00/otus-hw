@@ -1,6 +1,3 @@
-//go:build bench
-// +build bench
-
 package hw10programoptimization
 
 import (
@@ -48,6 +45,23 @@ func TestGetDomainStat_Time_And_Memory(t *testing.T) {
 
 	require.Less(t, int64(result.T), int64(timeLimit), "the program is too slow")
 	require.Less(t, mem, memoryLimit, "the program is too greedy")
+}
+
+func BenchmarkGetDomainStat(b *testing.B) {
+	r, err := zip.OpenReader("testdata/users.dat.zip")
+	require.NoError(b, err)
+	defer r.Close()
+
+	require.Equal(b, 1, len(r.File))
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		data, err := r.File[0].Open()
+		require.NoError(b, err)
+
+		b.StartTimer()
+		_, err = GetDomainStat(data, "biz")
+		require.NoError(b, err)
+	}
 }
 
 var expectedBizStat = DomainStat{

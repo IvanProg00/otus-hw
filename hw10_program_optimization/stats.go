@@ -32,7 +32,8 @@ func getUsers(r io.Reader) (users, error) {
 	jsoniter := jsoniter.ConfigFastest
 
 	for {
-		l, err := bufR.ReadBytes('\n')
+		l, _, err := bufR.ReadLine()
+		// l, err := bufR.ReadBytes('\n')
 		if err != nil {
 			if err != io.EOF {
 				return result, err
