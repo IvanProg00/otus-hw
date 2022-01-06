@@ -15,7 +15,7 @@ const (
 	timeLimit = 300 * time.Millisecond
 )
 
-// go test -v -count=1 -timeout=30s -tags bench .
+// go test -v -count=1 -timeout=30s -tags bench ^TestGetDomainStat_Time_And_Memory$
 func TestGetDomainStat_Time_And_Memory(t *testing.T) {
 	bench := func(b *testing.B) {
 		b.Helper()
@@ -47,22 +47,22 @@ func TestGetDomainStat_Time_And_Memory(t *testing.T) {
 	require.Less(t, mem, memoryLimit, "the program is too greedy")
 }
 
-func BenchmarkGetDomainStat(b *testing.B) {
-	r, err := zip.OpenReader("testdata/users.dat.zip")
-	require.NoError(b, err)
-	defer r.Close()
+// func BenchmarkGetDomainStat(b *testing.B) {
+// 	r, err := zip.OpenReader("testdata/users.dat.zip")
+// 	require.NoError(b, err)
+// 	defer r.Close()
 
-	require.Equal(b, 1, len(r.File))
-	for i := 0; i < b.N; i++ {
-		b.StopTimer()
-		data, err := r.File[0].Open()
-		require.NoError(b, err)
+// 	require.Equal(b, 1, len(r.File))
+// 	for i := 0; i < b.N; i++ {
+// 		b.StopTimer()
+// 		data, err := r.File[0].Open()
+// 		require.NoError(b, err)
 
-		b.StartTimer()
-		_, err = GetDomainStat(data, "biz")
-		require.NoError(b, err)
-	}
-}
+// 		b.StartTimer()
+// 		_, err = GetDomainStat(data, "biz")
+// 		require.NoError(b, err)
+// 	}
+// }
 
 var expectedBizStat = DomainStat{
 	"abata.biz":         25,
