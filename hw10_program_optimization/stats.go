@@ -46,7 +46,7 @@ func getUsers(r io.Reader) (users, error) {
 			return result, err
 		}
 		result = append(result, user)
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 	}
