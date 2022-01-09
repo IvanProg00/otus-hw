@@ -1,22 +1,17 @@
 package hw10programoptimization
 
 import (
-	"encoding/json"
+	"bufio"
+	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"regexp"
 	"strings"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 type User struct {
-	ID       int
-	Name     string
-	Username string
-	Email    string
-	Phone    string
-	Password string
-	Address  string
+	Email string
 }
 
 type DomainStat map[string]int
@@ -29,39 +24,46 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	return countDomains(u, domain)
 }
 
-type users [100_000]User
+type users []User
 
-func getUsers(r io.Reader) (result users, err error) {
-	content, err := ioutil.ReadAll(r)
-	if err != nil {
-		return
-	}
+func getUsers(r io.Reader) (users, error) {
+	result := make(users, 0, 14_000)
+	bufR := bufio.NewReader(r)
+	var user User
+	jsoniter := jsoniter.ConfigFastest
 
-	lines := strings.Split(string(content), "\n")
-	for i, line := range lines {
-		var user User
-		if err = json.Unmarshal([]byte(line), &user); err != nil {
-			return
+	for {
+		l, _, err := bufR.ReadLine()
+		if err != nil {
+			if !errors.Is(err, io.EOF) {
+				return result, err
+			} else if len(l) == 0 {
+				break
+			}
 		}
-		result[i] = user
+
+		if err = jsoniter.Unmarshal(l, &user); err != nil {
+			return result, err
+		}
+		result = append(result, user)
+		if errors.Is(err, io.EOF) {
+			break
+		}
 	}
-	return
+
+	return result, nil
 }
 
 func countDomains(u users, domain string) (DomainStat, error) {
-	result := make(DomainStat)
+	result := make(DomainStat, 1_000)
+	domain = "." + domain
 
 	for _, user := range u {
-		matched, err := regexp.Match("\\."+domain, []byte(user.Email))
-		if err != nil {
-			return nil, err
-		}
-
-		if matched {
-			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
-			num++
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num
+		if strings.HasSuffix(user.Email, domain) {
+			pos := strings.IndexByte(user.Email, '@')
+			result[strings.ToLower(user.Email[pos+1:])]++
 		}
 	}
+
 	return result, nil
 }
