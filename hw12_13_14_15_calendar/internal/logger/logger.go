@@ -22,32 +22,40 @@ func New(level string) *Logger {
 	logger := Logger{}
 
 	switch level {
-	case "info":
-		logger.level = INFO
 	case "warn":
 		logger.level = WARN
 	case "error":
 		logger.level = ERROR
 	case "debug":
 		logger.level = DEBUG
+	default:
+		logger.level = INFO
 	}
 
 	return &logger
 }
 
 func (l Logger) Info(msg string) {
-	log(msg, "INFO")
+	if l.level >= INFO {
+		log(msg, "INFO")
+	}
 }
 
 func (l Logger) Warn(msg string) {
-	log(msg, "WARN")
+	if l.level >= WARN {
+		log(msg, "WARN")
+	}
 }
 
 func (l Logger) Error(msg string) {
-	log(msg, "ERROR")
+	if l.level >= ERROR {
+		log(msg, "ERROR")
+	}
 }
 func (l Logger) Debug(msg string) {
-	log(msg, "DEBUG")
+	if l.level >= DEBUG {
+		log(msg, "DEBUG")
+	}
 }
 
 func log(msg, level string) {
