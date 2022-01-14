@@ -53,7 +53,7 @@ var rootCmd = &cobra.Command{
 		if err := server.Start(ctx); err != nil {
 			logg.Error("failed to start http server: " + err.Error())
 			cancel()
-			os.Exit(1) //nolint:gocritic
+			os.Exit(1)
 		}
 	},
 }

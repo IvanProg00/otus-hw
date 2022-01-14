@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 
 	"gopkg.in/yaml.v2"
@@ -30,9 +29,5 @@ func NewConfigFromYaml(path string) (Config, error) {
 		return Config{}, err
 	}
 
-	fmt.Println(config)
-
 	return config, nil
 }
-
-// TODO
