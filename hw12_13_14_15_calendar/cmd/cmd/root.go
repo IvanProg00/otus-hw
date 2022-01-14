@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -20,7 +21,11 @@ var rootCmd = &cobra.Command{
 	Short: "Calendar App",
 	Long:  `Calendar App`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config := config.NewConfig()
+		config, err := config.NewConfigFromYaml(configFile)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		logg := logger.New(config.Logger.Level)
 
 		storage := memorystorage.New()
