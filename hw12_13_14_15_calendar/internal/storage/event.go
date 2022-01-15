@@ -8,7 +8,7 @@ import (
 
 type Event struct {
 	ID             uuid.UUID
-	Title          string `faker:"len=50"`
+	Title          string
 	Description    string
 	DateTime       time.Time
 	FinishDateTime time.Time

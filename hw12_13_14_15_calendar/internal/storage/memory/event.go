@@ -35,14 +35,22 @@ func (s *Storage) DeleteEvent(id uuid.UUID) error {
 	return errorsstorage.ErrNotFound
 }
 
-func (s *Storage) ListForDayEvent(date time.Time) ([]storage.Event, error) {
-	return []storage.Event{}, nil
+func (s *Storage) ListByDayEvent(date time.Time) ([]storage.Event, error) {
+	res := []storage.Event{}
+
+	for _, event := range s.events {
+		if event.DateTime.Year() == date.Year() && event.DateTime.YearDay() == date.YearDay() {
+			res = append(res, event)
+		}
+	}
+
+	return res, nil
 }
 
-func (s *Storage) ListForWeekEvent(date time.Time) ([]storage.Event, error) {
+func (s *Storage) ListByWeekEvent(date time.Time) ([]storage.Event, error) {
 	return s.events, nil
 }
 
-func (s *Storage) ListForMonthEvent(date time.Time) ([]storage.Event, error) {
+func (s *Storage) ListByMonthEvent(date time.Time) ([]storage.Event, error) {
 	return s.events, nil
 }
