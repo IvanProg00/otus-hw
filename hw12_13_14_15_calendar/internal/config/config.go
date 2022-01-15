@@ -11,12 +11,10 @@ import (
 // при их конструировании только необходимые параметры, а также уменьшает вероятность циклической зависимости.
 type Config struct {
 	Logger LoggerConf `yaml:"logger"`
-	// TODO
 }
 
 type LoggerConf struct {
 	Level string `yaml:"level"`
-	// TODO
 }
 
 func NewConfigFromYaml(path string) (Config, error) {

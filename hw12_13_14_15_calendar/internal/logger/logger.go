@@ -22,14 +22,14 @@ func New(level string) *Logger {
 	logger := Logger{}
 
 	switch level {
+	case "info":
+		logger.level = INFO
 	case "warn":
 		logger.level = WARN
 	case "error":
 		logger.level = ERROR
-	case "debug":
-		logger.level = DEBUG
 	default:
-		logger.level = INFO
+		logger.level = DEBUG
 	}
 
 	return &logger

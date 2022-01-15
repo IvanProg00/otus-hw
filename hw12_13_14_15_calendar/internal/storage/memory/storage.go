@@ -1,14 +1,18 @@
 package memorystorage
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/IvanProg00/otus-hw/hw12_13_14_15_calendar/internal/storage"
+)
 
 type Storage struct {
-	// TODO
-	mu sync.RWMutex
+	events []storage.Event
+	mu     sync.RWMutex
 }
 
-func New() *Storage {
-	return &Storage{}
+func New() storage.StorageApi {
+	return &Storage{
+		events: []storage.Event{},
+	}
 }
-
-// TODO
