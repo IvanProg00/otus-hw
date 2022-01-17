@@ -12,7 +12,7 @@ import (
 	"github.com/IvanProg00/otus-hw/hw12_13_14_15_calendar/internal/config"
 	"github.com/IvanProg00/otus-hw/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/IvanProg00/otus-hw/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/IvanProg00/otus-hw/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/IvanProg00/otus-hw/hw12_13_14_15_calendar/internal/storage/sql"
 	"github.com/spf13/cobra"
 )
 
@@ -26,9 +26,17 @@ var rootCmd = &cobra.Command{
 			fmt.Println(err)
 			os.Exit(1)
 		}
+
 		logg := logger.New(config.Logger.Level)
 
-		storage := memorystorage.New()
+		// storage := memorystorage.New()
+		storage := sqlstorage.New(config.Database)
+		if err := storage.Connect(context.Background()); err != nil {
+			logg.Error(err.Error())
+			os.Exit(0)
+		}
+		logg.Info("Database connected")
+
 		calendar := app.New(logg, storage)
 
 		server := internalhttp.NewServer(logg, calendar)

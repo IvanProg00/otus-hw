@@ -59,5 +59,5 @@ func (l Logger) Debug(msg string) {
 }
 
 func log(msg, level string) {
-	fmt.Printf("%s [%s] - %s", time.Now().Format("2006-01-02 15:04:05"), level, msg)
+	fmt.Printf("%s [%s] - %s\n", time.Now().Format("2006-01-02 15:04:05"), level, msg)
 }

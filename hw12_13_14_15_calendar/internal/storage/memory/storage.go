@@ -11,7 +11,7 @@ type Storage struct {
 	mu     sync.RWMutex
 }
 
-func New() storage.StorageApi {
+func New() *Storage {
 	return &Storage{
 		events: []storage.Event{},
 	}

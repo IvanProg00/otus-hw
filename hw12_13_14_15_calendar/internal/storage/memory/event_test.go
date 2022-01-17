@@ -349,4 +349,100 @@ func TestListByWeekEvent(t *testing.T) {
 }
 
 func TestListByMonthEvent(t *testing.T) {
+	tests := []struct {
+		storage        Storage
+		day            time.Time
+		expectedEvents []storage.Event
+	}{
+		{
+			storage: Storage{
+				events: []storage.Event{
+					{
+						ID:             uuid.MustParse("88695f39-5621-4034-b64a-a3b3b5bb5402"),
+						Title:          "Gabriel",
+						Description:    "Culpa excepteur reprehenderit veniam voluptate.",
+						DateTime:       time.Date(2005, 5, 1, 21, 44, 45, 49, time.UTC),
+						FinishDateTime: time.Date(2017, 3, 25, 18, 9, 01, 23, time.UTC),
+						UserID:         uuid.MustParse("8f09cf01-3d8f-49ae-96d7-fb398b497c57"),
+					},
+					{
+						ID:             uuid.MustParse("c0db6973-7145-4119-890d-7f62662d5e86"),
+						Title:          "Etta",
+						Description:    "Minim anim anim anim est non voluptate duis sit velit.",
+						DateTime:       time.Date(2005, 4, 12, 0, 25, 50, 14, time.UTC),
+						FinishDateTime: time.Date(2009, 2, 25, 0, 38, 9, 05, time.UTC),
+						UserID:         uuid.MustParse("7db77af6-4218-439b-8851-8cbafde47213"),
+					},
+					{
+						ID:             uuid.MustParse("c8b69af1-2042-45e2-824a-45404dc578aa"),
+						Title:          "Lexine",
+						Description:    "Magna eiusmod laboris Lorem nostrud ad ex dolore pariatur fugiat labore ullamco proident do aliqua.",
+						DateTime:       time.Date(2004, 4, 15, 4, 46, 25, 38, time.UTC),
+						FinishDateTime: time.Date(2002, 5, 3, 8, 22, 19, 00, time.UTC),
+						UserID:         uuid.MustParse("719f59b6-3c79-4457-8551-ed2fcc5c332e"),
+					},
+					{
+						ID:             uuid.MustParse("d7e1f028-e045-4b72-a76e-f4d6f8af12f1"),
+						Title:          "Bride",
+						Description:    "Do sunt elit cupidatat irure adipisicing in ut.",
+						DateTime:       time.Date(2005, 4, 1, 18, 14, 28, 42, time.UTC),
+						FinishDateTime: time.Date(2011, 11, 11, 6, 9, 3, 15, time.UTC),
+						UserID:         uuid.MustParse("02174c96-9bd0-4825-9841-3515e5547e2d"),
+					},
+					{
+						ID:             uuid.MustParse("2126d0ba-2a89-4ab8-bcfe-9c66c21b61f5"),
+						Title:          "Pen",
+						Description:    "Quis elit culpa Lorem ad laboris voluptate.",
+						DateTime:       time.Date(2005, 4, 30, 3, 16, 50, 14, time.UTC),
+						FinishDateTime: time.Date(2009, 07, 5, 4, 6, 10, 05, time.UTC),
+						UserID:         uuid.MustParse("f857de76-4871-4fd4-add2-3191c19510cb"),
+					},
+					{
+						ID:             uuid.MustParse("eb46f07f-6964-42b6-aa57-98238f77b4ee"),
+						Title:          "Karina",
+						Description:    "Non eu quis veniam dolor exercitation dolore eu.",
+						DateTime:       time.Date(2008, 4, 28, 3, 16, 50, 14, time.UTC),
+						FinishDateTime: time.Date(2009, 07, 5, 4, 6, 10, 05, time.UTC),
+						UserID:         uuid.MustParse("88a419b0-9c4a-4a4e-899f-666c8124a599"),
+					},
+				},
+			},
+			day: time.Date(2005, 4, 1, 23, 16, 23, 0, time.UTC),
+			expectedEvents: []storage.Event{
+				{
+					ID:             uuid.MustParse("c0db6973-7145-4119-890d-7f62662d5e86"),
+					Title:          "Etta",
+					Description:    "Minim anim anim anim est non voluptate duis sit velit.",
+					DateTime:       time.Date(2005, 4, 12, 0, 25, 50, 14, time.UTC),
+					FinishDateTime: time.Date(2009, 2, 25, 0, 38, 9, 05, time.UTC),
+					UserID:         uuid.MustParse("7db77af6-4218-439b-8851-8cbafde47213"),
+				},
+				{
+					ID:             uuid.MustParse("d7e1f028-e045-4b72-a76e-f4d6f8af12f1"),
+					Title:          "Bride",
+					Description:    "Do sunt elit cupidatat irure adipisicing in ut.",
+					DateTime:       time.Date(2005, 4, 1, 18, 14, 28, 42, time.UTC),
+					FinishDateTime: time.Date(2011, 11, 11, 6, 9, 3, 15, time.UTC),
+					UserID:         uuid.MustParse("02174c96-9bd0-4825-9841-3515e5547e2d"),
+				},
+				{
+					ID:             uuid.MustParse("2126d0ba-2a89-4ab8-bcfe-9c66c21b61f5"),
+					Title:          "Pen",
+					Description:    "Quis elit culpa Lorem ad laboris voluptate.",
+					DateTime:       time.Date(2005, 4, 30, 3, 16, 50, 14, time.UTC),
+					FinishDateTime: time.Date(2009, 07, 5, 4, 6, 10, 05, time.UTC),
+					UserID:         uuid.MustParse("f857de76-4871-4fd4-add2-3191c19510cb"),
+				},
+			},
+		},
+	}
+
+	for i := range tests {
+		t.Run(fmt.Sprintf("Test %d", i), func(t *testing.T) {
+			require := require.New(t)
+			events, err := tests[i].storage.ListByMonthEvent(tests[i].day)
+			require.NoError(err)
+			require.EqualValues(tests[i].expectedEvents, events)
+		})
+	}
 }

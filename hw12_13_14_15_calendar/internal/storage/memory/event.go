@@ -65,5 +65,19 @@ func (s *Storage) ListByWeekEvent(startWeek time.Time) ([]storage.Event, error) 
 }
 
 func (s *Storage) ListByMonthEvent(date time.Time) ([]storage.Event, error) {
-	return s.events, nil
+	res := []storage.Event{}
+
+	startMonth := time.Date(date.Year(), date.Month(), 1, 0, 0, 0, 0, date.Location())
+	endMonth := startMonth.AddDate(0, 1, 0)
+
+	fmt.Println(date)
+	fmt.Println(startMonth, endMonth)
+	for _, event := range s.events {
+		fmt.Println(event.DateTime)
+		if startMonth.Before(event.DateTime) && endMonth.After(event.DateTime) {
+			res = append(res, event)
+		}
+	}
+
+	return res, nil
 }

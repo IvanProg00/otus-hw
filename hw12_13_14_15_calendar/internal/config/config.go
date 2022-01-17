@@ -10,9 +10,17 @@ import (
 // Организация конфига в main принуждает нас сужать API компонентов, использовать
 // при их конструировании только необходимые параметры, а также уменьшает вероятность циклической зависимости.
 type Config struct {
-	Logger LoggerConf `yaml:"logger"`
+	Database DatabaseConf `yaml:"db"`
+	Logger   LoggerConf   `yaml:"logger"`
 }
 
+type DatabaseConf struct {
+	Hostname string `yaml:"hostname"`
+	Port     int    `yaml:"port"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	Database string `yaml:"database"`
+}
 type LoggerConf struct {
 	Level string `yaml:"level"`
 }
