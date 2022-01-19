@@ -17,7 +17,14 @@ func (s *Storage) CreateEvent(event storage.Event) error {
 func (s *Storage) UpdateEvent(id uuid.UUID, event storage.Event) error {
 	for i, ev := range s.events {
 		if ev.ID == id {
-			s.events[i] = event
+			s.events[i] = storage.Event{
+				ID:          ev.ID,
+				Title:       event.Title,
+				Description: event.Description,
+				StartAt:     event.StartAt,
+				FinishAt:    event.FinishAt,
+				UserID:      event.UserID,
+			}
 			return nil
 		}
 	}
@@ -40,7 +47,7 @@ func (s *Storage) ListByDayEvent(date time.Time) ([]storage.Event, error) {
 	res := []storage.Event{}
 
 	for _, event := range s.events {
-		if event.DateTime.Year() == date.Year() && event.DateTime.YearDay() == date.YearDay() {
+		if event.StartAt.Year() == date.Year() && event.StartAt.YearDay() == date.YearDay() {
 			res = append(res, event)
 		}
 	}
@@ -56,7 +63,7 @@ func (s *Storage) ListByWeekEvent(startWeek time.Time) ([]storage.Event, error) 
 	fmt.Println(endWeek)
 
 	for _, event := range s.events {
-		if startWeek.Before(event.DateTime) && endWeek.After(event.DateTime) {
+		if startWeek.Before(event.StartAt) && endWeek.After(event.StartAt) {
 			res = append(res, event)
 		}
 	}
@@ -73,8 +80,8 @@ func (s *Storage) ListByMonthEvent(date time.Time) ([]storage.Event, error) {
 	fmt.Println(date)
 	fmt.Println(startMonth, endMonth)
 	for _, event := range s.events {
-		fmt.Println(event.DateTime)
-		if startMonth.Before(event.DateTime) && endMonth.After(event.DateTime) {
+		fmt.Println(event.StartAt)
+		if startMonth.Before(event.StartAt) && endMonth.After(event.StartAt) {
 			res = append(res, event)
 		}
 	}

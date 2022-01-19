@@ -7,10 +7,10 @@ import (
 )
 
 type Event struct {
-	ID             uuid.UUID
-	Title          string
-	Description    string
-	DateTime       time.Time
-	FinishDateTime time.Time
-	UserID         uuid.UUID
+	ID          uuid.UUID
+	Title       string
+	Description string
+	StartAt     time.Time
+	FinishAt    time.Time
+	UserID      uuid.UUID
 }

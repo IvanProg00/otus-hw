@@ -37,6 +37,5 @@ func (s *Storage) Connect(ctx context.Context) error {
 }
 
 func (s *Storage) Close(ctx context.Context) error {
-	// TODO
-	return nil
+	return s.db.Close()
 }
