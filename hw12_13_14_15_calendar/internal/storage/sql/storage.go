@@ -5,11 +5,12 @@ import (
 	"fmt"
 
 	"github.com/IvanProg00/otus-hw/hw12_13_14_15_calendar/internal/config"
+	"github.com/IvanProg00/otus-hw/hw12_13_14_15_calendar/internal/storage"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
-type Storage struct { // TODO
+type sqlStorage struct {
 	hostname string
 	port     int
 	username string
@@ -18,8 +19,8 @@ type Storage struct { // TODO
 	db       *sqlx.DB
 }
 
-func New(config config.DatabaseConf) *Storage {
-	return &Storage{
+func New(config config.DatabaseConf) storage.Storage {
+	return &sqlStorage{
 		hostname: config.Hostname,
 		port:     config.Port,
 		username: config.Username,
@@ -28,7 +29,7 @@ func New(config config.DatabaseConf) *Storage {
 	}
 }
 
-func (s *Storage) Connect(ctx context.Context) error {
+func (s *sqlStorage) Connect(ctx context.Context) error {
 	var err error
 	s.db, err = sqlx.ConnectContext(ctx, "pgx",
 		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s",
@@ -36,6 +37,6 @@ func (s *Storage) Connect(ctx context.Context) error {
 	return err
 }
 
-func (s *Storage) Close(ctx context.Context) error {
+func (s *sqlStorage) Close() error {
 	return s.db.Close()
 }

@@ -1,6 +1,7 @@
 package memorystorage
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -14,7 +15,7 @@ import (
 func TestCreateEvent(t *testing.T) {
 	require := require.New(t)
 	tests := []struct {
-		storage        Storage
+		storage        memoryStorage
 		addEvent       storage.Event
 		expectedEvents []storage.Event
 	}{
@@ -41,7 +42,7 @@ func TestCreateEvent(t *testing.T) {
 	}
 
 	for i := range tests {
-		require.NoError(tests[i].storage.CreateEvent(tests[i].addEvent))
+		require.NoError(tests[i].storage.CreateEvent(context.Background(), tests[i].addEvent))
 		require.EqualValues(tests[i].expectedEvents, tests[i].storage.events)
 	}
 }
@@ -49,13 +50,12 @@ func TestCreateEvent(t *testing.T) {
 func TestUpdateEvent(t *testing.T) {
 	require := require.New(t)
 	tests := []struct {
-		storage        Storage
-		updateId       uuid.UUID
+		storage        memoryStorage
 		updateEvent    storage.Event
 		expectedEvents []storage.Event
 	}{
 		{
-			storage: Storage{
+			storage: memoryStorage{
 				events: []storage.Event{
 					{
 						ID:          uuid.MustParse("66240999-d75b-437a-8205-15d7bbd1213f"),
@@ -67,7 +67,6 @@ func TestUpdateEvent(t *testing.T) {
 					},
 				},
 			},
-			updateId: uuid.MustParse("66240999-d75b-437a-8205-15d7bbd1213f"),
 			updateEvent: storage.Event{
 				ID:          uuid.MustParse("66240999-d75b-437a-8205-15d7bbd1213f"),
 				Title:       "Voyatouch",
@@ -90,7 +89,7 @@ func TestUpdateEvent(t *testing.T) {
 	}
 
 	for i := range tests {
-		require.NoError(tests[i].storage.UpdateEvent(tests[i].updateId, tests[i].updateEvent))
+		require.NoError(tests[i].storage.UpdateEvent(context.Background(), tests[i].updateEvent))
 		require.EqualValues(tests[i].expectedEvents, tests[i].storage.events)
 	}
 }
@@ -98,12 +97,11 @@ func TestUpdateEvent(t *testing.T) {
 func TestUpdateEvent_notFound(t *testing.T) {
 	require := require.New(t)
 	tests := []struct {
-		storage     Storage
-		updateId    uuid.UUID
+		storage     memoryStorage
 		updateEvent storage.Event
 	}{
 		{
-			storage: Storage{
+			storage: memoryStorage{
 				events: []storage.Event{
 					{
 						ID:          uuid.MustParse("66240999-d75b-437a-8205-15d7bbd1213f"),
@@ -115,7 +113,6 @@ func TestUpdateEvent_notFound(t *testing.T) {
 					},
 				},
 			},
-			updateId: uuid.MustParse("5871c266-e102-4a26-a3e8-a35757d93964"),
 			updateEvent: storage.Event{
 				ID:          uuid.MustParse("5871c266-e102-4a26-a3e8-a35757d93964"),
 				Title:       "Voyatouch",
@@ -130,7 +127,7 @@ func TestUpdateEvent_notFound(t *testing.T) {
 	for i := range tests {
 		expectedEvents := make([]storage.Event, len(tests[i].storage.events))
 		copy(expectedEvents, tests[i].storage.events)
-		require.ErrorIs(tests[i].storage.UpdateEvent(tests[i].updateId, tests[i].updateEvent), errorsstorage.ErrNotFound)
+		require.ErrorIs(tests[i].storage.UpdateEvent(context.Background(), tests[i].updateEvent), errorsstorage.ErrNotFound)
 		require.EqualValues(expectedEvents, tests[i].storage.events)
 	}
 }
@@ -138,13 +135,13 @@ func TestUpdateEvent_notFound(t *testing.T) {
 func TestDeleteEvent(t *testing.T) {
 	require := require.New(t)
 	tests := []struct {
-		storage        Storage
+		storage        memoryStorage
 		deleteId       uuid.UUID
 		updateEvent    storage.Event
 		expectedEvents []storage.Event
 	}{
 		{
-			storage: Storage{
+			storage: memoryStorage{
 				events: []storage.Event{
 					{
 						ID:          uuid.MustParse("66240999-d75b-437a-8205-15d7bbd1213f"),
@@ -162,19 +159,19 @@ func TestDeleteEvent(t *testing.T) {
 	}
 
 	for i := range tests {
-		require.NoError(tests[i].storage.DeleteEvent(tests[i].deleteId))
+		require.NoError(tests[i].storage.DeleteEvent(context.Background(), tests[i].deleteId))
 		require.EqualValues(tests[i].expectedEvents, tests[i].storage.events)
 	}
 }
 
 func TestListByDayEvent(t *testing.T) {
 	tests := []struct {
-		storage        Storage
+		storage        memoryStorage
 		day            time.Time
 		expectedEvents []storage.Event
 	}{
 		{
-			storage: Storage{
+			storage: memoryStorage{
 				events: []storage.Event{
 					{
 						ID:          uuid.MustParse("2965d713-e587-4a36-adc7-63afe2c06cb8"),
@@ -252,7 +249,7 @@ func TestListByDayEvent(t *testing.T) {
 		t.Run(fmt.Sprintf("Test %d", i), func(t *testing.T) {
 
 			require := require.New(t)
-			events, err := tests[i].storage.ListByDayEvent(tests[i].day)
+			events, err := tests[i].storage.ListByDayEvent(context.Background(), tests[i].day)
 			require.NoError(err)
 			require.EqualValues(tests[i].expectedEvents, events)
 		})
@@ -262,12 +259,12 @@ func TestListByDayEvent(t *testing.T) {
 func TestListByWeekEvent(t *testing.T) {
 	require := require.New(t)
 	tests := []struct {
-		storage        Storage
+		storage        memoryStorage
 		week           time.Time
 		expectedEvents []storage.Event
 	}{
 		{
-			storage: Storage{
+			storage: memoryStorage{
 				events: []storage.Event{
 					{
 						ID:          uuid.MustParse("dc4b884a-cfab-4c8f-bcfd-6d28e3ea9ed3"),
@@ -342,7 +339,7 @@ func TestListByWeekEvent(t *testing.T) {
 	}
 
 	for i := range tests {
-		events, err := tests[i].storage.ListByWeekEvent(tests[i].week)
+		events, err := tests[i].storage.ListByWeekEvent(context.Background(), tests[i].week)
 		require.NoError(err)
 		require.EqualValues(tests[i].expectedEvents, events)
 	}
@@ -350,12 +347,12 @@ func TestListByWeekEvent(t *testing.T) {
 
 func TestListByMonthEvent(t *testing.T) {
 	tests := []struct {
-		storage        Storage
+		storage        memoryStorage
 		day            time.Time
 		expectedEvents []storage.Event
 	}{
 		{
-			storage: Storage{
+			storage: memoryStorage{
 				events: []storage.Event{
 					{
 						ID:          uuid.MustParse("88695f39-5621-4034-b64a-a3b3b5bb5402"),
@@ -440,7 +437,7 @@ func TestListByMonthEvent(t *testing.T) {
 	for i := range tests {
 		t.Run(fmt.Sprintf("Test %d", i), func(t *testing.T) {
 			require := require.New(t)
-			events, err := tests[i].storage.ListByMonthEvent(tests[i].day)
+			events, err := tests[i].storage.ListByMonthEvent(context.Background(), tests[i].day)
 			require.NoError(err)
 			require.EqualValues(tests[i].expectedEvents, events)
 		})

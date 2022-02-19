@@ -4,5 +4,5 @@ db:
   hostname: localhost
   port: 5432
   username: postgres
-  password: postgres
-  database: database
+  password: password
+  database: calendar

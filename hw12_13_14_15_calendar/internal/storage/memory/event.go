@@ -1,6 +1,7 @@
 package memorystorage
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -9,14 +10,14 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *Storage) CreateEvent(event storage.Event) error {
+func (s *memoryStorage) CreateEvent(ctx context.Context, event storage.Event) error {
 	s.events = append(s.events, event)
 	return nil
 }
 
-func (s *Storage) UpdateEvent(id uuid.UUID, event storage.Event) error {
+func (s *memoryStorage) UpdateEvent(ctx context.Context, event storage.Event) error {
 	for i, ev := range s.events {
-		if ev.ID == id {
+		if ev.ID == event.ID {
 			s.events[i] = storage.Event{
 				ID:          ev.ID,
 				Title:       event.Title,
@@ -32,7 +33,7 @@ func (s *Storage) UpdateEvent(id uuid.UUID, event storage.Event) error {
 	return errorsstorage.ErrNotFound
 }
 
-func (s *Storage) DeleteEvent(id uuid.UUID) error {
+func (s *memoryStorage) DeleteEvent(ctx context.Context, id uuid.UUID) error {
 	for i, ev := range s.events {
 		if ev.ID == id {
 			s.events = append(s.events[:i], s.events[i+1:]...)
@@ -43,7 +44,7 @@ func (s *Storage) DeleteEvent(id uuid.UUID) error {
 	return errorsstorage.ErrNotFound
 }
 
-func (s *Storage) ListByDayEvent(date time.Time) ([]storage.Event, error) {
+func (s *memoryStorage) ListByDayEvent(ctx context.Context, date time.Time) ([]storage.Event, error) {
 	res := []storage.Event{}
 
 	for _, event := range s.events {
@@ -55,7 +56,7 @@ func (s *Storage) ListByDayEvent(date time.Time) ([]storage.Event, error) {
 	return res, nil
 }
 
-func (s *Storage) ListByWeekEvent(startWeek time.Time) ([]storage.Event, error) {
+func (s *memoryStorage) ListByWeekEvent(ctx context.Context, startWeek time.Time) ([]storage.Event, error) {
 	res := []storage.Event{}
 
 	startWeek = time.Date(startWeek.Year(), startWeek.Month(), startWeek.Day(), 0, 0, 0, 0, startWeek.Location())
@@ -71,7 +72,7 @@ func (s *Storage) ListByWeekEvent(startWeek time.Time) ([]storage.Event, error) 
 	return res, nil
 }
 
-func (s *Storage) ListByMonthEvent(date time.Time) ([]storage.Event, error) {
+func (s *memoryStorage) ListByMonthEvent(ctx context.Context, date time.Time) ([]storage.Event, error) {
 	res := []storage.Event{}
 
 	startMonth := time.Date(date.Year(), date.Month(), 1, 0, 0, 0, 0, date.Location())

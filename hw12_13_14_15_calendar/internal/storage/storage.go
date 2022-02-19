@@ -1,16 +1,20 @@
 package storage
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type StorageApi interface {
-	CreateEvent(event Event) error
-	UpdateEvent(id uuid.UUID, event Event) error
-	DeleteEvent(id uuid.UUID) error
-	ListByDayEvent(date time.Time) ([]Event, error)
-	ListByWeekEvent(date time.Time) ([]Event, error)
-	ListByMonthEvent(date time.Time) ([]Event, error)
+type Storage interface {
+	Connect(ctx context.Context) error
+	Close() error
+
+	CreateEvent(ctx context.Context, event Event) error
+	UpdateEvent(ctx context.Context, event Event) error
+	DeleteEvent(ctx context.Context, id uuid.UUID) error
+	ListByDayEvent(ctx context.Context, date time.Time) ([]Event, error)
+	ListByWeekEvent(ctx context.Context, date time.Time) ([]Event, error)
+	ListByMonthEvent(ctx context.Context, date time.Time) ([]Event, error)
 }

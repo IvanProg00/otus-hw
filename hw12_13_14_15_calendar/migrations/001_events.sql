@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE events (
-	id UUID PRIMARY KEY,
+	id UUID NOT NULL PRIMARY KEY,
 	title TEXT NOT NULL,
 	description TEXT NOT NULL,
 	start_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -12,5 +12,5 @@ CREATE TABLE events (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE events;
+DROP DATABASE calendar;
 -- +goose StatementEnd

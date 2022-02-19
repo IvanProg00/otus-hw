@@ -14,12 +14,19 @@ const (
 	DEBUG
 )
 
-type Logger struct {
+type logger struct {
 	level loggerLevel
 }
 
-func New(level string) *Logger {
-	logger := Logger{}
+type Logger interface {
+	Info(msg string)
+	Warn(msg string)
+	Error(msg string)
+	Debug(msg string)
+}
+
+func New(level string) Logger {
+	logger := logger{}
 
 	switch level {
 	case "info":
@@ -35,24 +42,24 @@ func New(level string) *Logger {
 	return &logger
 }
 
-func (l Logger) Info(msg string) {
+func (l logger) Info(msg string) {
 	if l.level >= INFO {
 		log(msg, "INFO")
 	}
 }
 
-func (l Logger) Warn(msg string) {
+func (l logger) Warn(msg string) {
 	if l.level >= WARN {
 		log(msg, "WARN")
 	}
 }
 
-func (l Logger) Error(msg string) {
+func (l logger) Error(msg string) {
 	if l.level >= ERROR {
 		log(msg, "ERROR")
 	}
 }
-func (l Logger) Debug(msg string) {
+func (l logger) Debug(msg string) {
 	if l.level >= DEBUG {
 		log(msg, "DEBUG")
 	}
