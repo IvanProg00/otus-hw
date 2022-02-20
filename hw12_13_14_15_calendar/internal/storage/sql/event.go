@@ -17,40 +17,82 @@ func (s *sqlStorage) CreateEvent(ctx context.Context, event storage.Event) error
 }
 
 func (s *sqlStorage) UpdateEvent(ctx context.Context, event storage.Event) error {
-	_, err := s.db.NamedExecContext(ctx, "UPDATE events SET (title,description,start_at,finish_at,user_id) ="+
+	res, err := s.db.NamedExecContext(ctx, "UPDATE events SET (title,description,start_at,finish_at,user_id) ="+
 		" (:title,:description,:start_at,:finish_at,:user_id)"+
 		" WHERE id=:id",
 		&event)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return errorsstorage.ErrNotFound
+	}
+
 	return err
 }
 
 func (s *sqlStorage) DeleteEvent(ctx context.Context, id uuid.UUID) error {
-	return errorsstorage.ErrNotFound
+	res, err := s.db.ExecContext(ctx, "DELETE FROM events"+
+		" WHERE id=$1",
+		id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return errorsstorage.ErrNotFound
+	}
+
+	return err
 }
 
 func (s *sqlStorage) ListByDayEvent(ctx context.Context, date time.Time) ([]storage.Event, error) {
 	res := []storage.Event{}
+	date = date.Truncate(24 * time.Hour)
 
-	rows, err := s.db.Queryx("SELECT id, title FROM events")
-	if err != nil {
-		return nil, err
-	}
-
-	for rows.Next() {
-		var event storage.Event
-		if err := rows.StructScan(&event); err != nil {
-			return nil, err
-		}
-		res = append(res, event)
+	if err := s.db.SelectContext(ctx, &res, "SELECT * FROM events"+
+		" WHERE date_trunc('day',start_at)=$1", date); err != nil {
+		return res, err
 	}
 
 	return res, nil
 }
 
-func (s *sqlStorage) ListByWeekEvent(ctx context.Context, startWeek time.Time) ([]storage.Event, error) {
-	return []storage.Event{}, nil
+func (s *sqlStorage) ListByWeekEvent(ctx context.Context, date time.Time) ([]storage.Event, error) {
+	res := []storage.Event{}
+	startWeek := date.Truncate(24 * time.Hour)
+	finishWeek := startWeek.Local().AddDate(0, 0, 6)
+
+	err := s.db.SelectContext(ctx, &res, "SELECT * FROM events"+
+		" WHERE date_trunc('day',start_at)>=$1 AND date_trunc('day',start_at)<$2", startWeek, finishWeek)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func (s *sqlStorage) ListByMonthEvent(ctx context.Context, date time.Time) ([]storage.Event, error) {
-	return []storage.Event{}, nil
+	res := []storage.Event{}
+	startMonth := time.Date(date.Year(), date.Month(), 1, 0, 0, 0, 0, date.Location())
+	finishMonth := startMonth.Local().AddDate(0, 1, 0)
+
+	err := s.db.SelectContext(ctx, &res, "SELECT * FROM events"+
+		" WHERE date_trunc('day',start_at)>=$1 AND date_trunc('day',start_at)<$2", startMonth, finishMonth)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
