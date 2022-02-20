@@ -2,7 +2,10 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -38,7 +41,6 @@ var rootCmd = &cobra.Command{
 		logg.Info("Database connected")
 
 		calendar := app.New(logg, storage)
-
 		server := internalhttp.NewServer(logg, calendar)
 
 		ctx, cancel := signal.NotifyContext(context.Background(),
@@ -58,7 +60,7 @@ var rootCmd = &cobra.Command{
 
 		logg.Info("calendar is running...")
 
-		if err := server.Start(ctx); err != nil {
+		if err := server.Start(ctx, net.JoinHostPort(config.Server.Host, config.Server.Port)); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logg.Error("failed to start http server: " + err.Error())
 			cancel()
 			os.Exit(1)

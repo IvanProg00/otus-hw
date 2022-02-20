@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Database DatabaseConf `yaml:"db"`
 	Logger   LoggerConf   `yaml:"logger"`
+	Server   ServerConf   `yaml:"server"`
 }
 
 type DatabaseConf struct {
@@ -20,6 +21,11 @@ type DatabaseConf struct {
 }
 type LoggerConf struct {
 	Level string `yaml:"level"`
+}
+
+type ServerConf struct {
+	Host string `yaml:"host"`
+	Port string `yaml:"port"`
 }
 
 func NewConfigFromYaml(path string) (Config, error) {
