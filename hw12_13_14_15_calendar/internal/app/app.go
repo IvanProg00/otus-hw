@@ -21,7 +21,8 @@ func New(logger logger.Logger, storage storage.Storage) *App {
 	}
 }
 
-func (a *App) CreateEvent(ctx context.Context, title, description string, startAt, finishAt time.Time, userId uuid.UUID) error {
+func (a *App) CreateEvent(ctx context.Context, title, description string, startAt, finishAt time.Time,
+	userID uuid.UUID) error {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return err
@@ -33,30 +34,34 @@ func (a *App) CreateEvent(ctx context.Context, title, description string, startA
 		Description: description,
 		StartAt:     startAt,
 		FinishAt:    finishAt,
-		UserID:      userId,
+		UserID:      userID,
 	})
 }
 
-func (a *App) UpdateEvent(ctx context.Context, id uuid.UUID, title, description string, startAt, finishAt time.Time, userId uuid.UUID) error {
+func (a *App) UpdateEvent(ctx context.Context, id uuid.UUID, title, description string,
+	startAt, finishAt time.Time, userID uuid.UUID) error {
 	return a.Storage.UpdateEvent(ctx, storage.Event{
 		ID:          id,
 		Title:       title,
 		Description: description,
 		StartAt:     startAt,
 		FinishAt:    finishAt,
-		UserID:      userId,
+		UserID:      userID,
 	})
 }
 
 func (a *App) DeleteEvent(ctx context.Context, id uuid.UUID) error {
 	return a.Storage.DeleteEvent(ctx, id)
 }
+
 func (a *App) ListByDayEvent(ctx context.Context, date time.Time) ([]storage.Event, error) {
 	return a.Storage.ListByDayEvent(ctx, date)
 }
+
 func (a *App) ListByWeekEvent(ctx context.Context, date time.Time) ([]storage.Event, error) {
 	return a.Storage.ListByWeekEvent(ctx, date)
 }
+
 func (a *App) ListByMonthEvent(ctx context.Context, date time.Time) ([]storage.Event, error) {
 	return a.Storage.ListByMonthEvent(ctx, date)
 }

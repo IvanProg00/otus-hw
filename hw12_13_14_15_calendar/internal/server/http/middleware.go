@@ -22,7 +22,7 @@ func (s *Server) loggingMiddleware(next http.Handler) http.Handler {
 		lrw := &loggingResponseWriter{w, http.StatusOK}
 		next.ServeHTTP(lrw, r)
 		end := time.Since(start)
-		s.Logger.Info(fmt.Sprintf("%s %s %s %s %d %d \"%s\"", r.RemoteAddr, r.Method, r.URL, r.Proto, lrw.statusCode, end.Milliseconds(), r.UserAgent()))
-
+		s.Logger.Info(fmt.Sprintf("%s %s %s %s %d %d \"%s\"",
+			r.RemoteAddr, r.Method, r.URL, r.Proto, lrw.statusCode, end.Milliseconds(), r.UserAgent()))
 	})
 }

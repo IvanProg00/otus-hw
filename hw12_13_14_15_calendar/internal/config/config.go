@@ -19,6 +19,7 @@ type DatabaseConf struct {
 	Password string `yaml:"password"`
 	Database string `yaml:"database"`
 }
+
 type LoggerConf struct {
 	Level string `yaml:"level"`
 }

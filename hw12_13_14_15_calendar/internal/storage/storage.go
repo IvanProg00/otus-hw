@@ -10,7 +10,6 @@ import (
 type Storage interface {
 	Connect(ctx context.Context) error
 	Close() error
-
 	CreateEvent(ctx context.Context, event Event) error
 	UpdateEvent(ctx context.Context, event Event) error
 	DeleteEvent(ctx context.Context, id uuid.UUID) error

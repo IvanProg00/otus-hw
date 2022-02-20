@@ -60,7 +60,8 @@ var rootCmd = &cobra.Command{
 
 		logg.Info("calendar is running...")
 
-		if err := server.Start(ctx, net.JoinHostPort(config.Server.Host, config.Server.Port)); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := server.Start(ctx, net.JoinHostPort(config.Server.Host, config.Server.Port)); err != nil &&
+			!errors.Is(err, http.ErrServerClosed) {
 			logg.Error("failed to start http server: " + err.Error())
 			cancel()
 			os.Exit(1)

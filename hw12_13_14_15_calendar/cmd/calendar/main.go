@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/IvanProg00/otus-hw/hw12_13_14_15_calendar/cmd/cmd"
+	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 func main() {

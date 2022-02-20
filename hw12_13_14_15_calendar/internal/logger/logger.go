@@ -59,6 +59,7 @@ func (l logger) Error(msg string) {
 		log(msg, "ERROR")
 	}
 }
+
 func (l logger) Debug(msg string) {
 	if l.level >= DEBUG {
 		log(msg, "DEBUG")

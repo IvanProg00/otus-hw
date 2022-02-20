@@ -6,7 +6,6 @@ import (
 
 	"github.com/IvanProg00/otus-hw/hw12_13_14_15_calendar/internal/config"
 	"github.com/IvanProg00/otus-hw/hw12_13_14_15_calendar/internal/storage"
-	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
